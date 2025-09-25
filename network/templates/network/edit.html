@@ -1,0 +1,14 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+<div id="newpost">
+    {% if request.user == edited.creator %}
+        <form action="{% url 'edit' edited.id %}" method="post" id="editform">
+            {% csrf_token %}
+            <!-- Pre-fill the textarea with the current post content -->
+            <textarea name="content" id="content" placeholder="Edit">{{ edited.newpost }}</textarea>
+            <button class="btn btn-primary" id="button" type="submit">Save Changes</button>
+        </form>
+    {% endif %}
+</div>
+{% endblock %}
