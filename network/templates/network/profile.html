@@ -1,110 +1,74 @@
 {% extends "network/layout.html" %}
-
 {% block body %}
 
-<div id="profile-info" style="display: flex; justify-content: space-around; align-items: center; margin: 20px 0;">
-    <div style="text-align: center;">
-        <h3>Followers</h3>
-        <p>{{ allfollower.count }}</p>
-    </div>
-    <div style="text-align: center;">
-        <h3>Following</h3>
-        <p>{{ allfollowing.count }}</p>
-    </div>
-</div>
-
-
-    {% if user.is_authenticated %}
-    {% if profile_user != user %}
-       {% if isfollow %}
-       <form action="{% url 'unfollow' %}" method="post">
-        {% csrf_token %}
-        <input type="hidden" name="userfollow" value="{{profile_user}}">
-        <button type="submit" class="btn btn-danger">Unfollow</button>
-    </form>
-       {% else %}
-       <form action="{% url 'follow' %}" method="post">
-        {% csrf_token %}
-        <input type="hidden" name="userfollow" value="{{profile_user}}">
-        <button type="submit" class="btn btn-success">Follow</button>
-    </form>
-
-       {% endif %}
-
-     {% endif %}
-  {% endif %}
-
-
-<div id="allpost">
-    <h6>Posts by {{ profile_user.username }}</h6>
-    {% if query %}
-        {% for i in query %}
-        <ul class="list-group">
-            <li class="list-group-item">
-                <a href="{% url 'profile' i.creator.id %}"><strong>{{i.creator.username}}</strong> </a>  <br>  
-                <span>{{ i.newpost }}</span> <br>
-                <small>{{ i.timestamp }}</small> <br> 
-
-                <form action="{% url 'like' i.id %}" method="post" id="likeform">
-                    {% csrf_token %}
-                    <input type="hidden" name="post_id" value="{{ i.id }}">
-                    <button class="btn btn-light like-button" type="submit">
-
-                        ❤️ {{ i.likes }}
-                    </button>
-                </form>
-            </li>
-        </ul>
-        {% endfor %}
-    {% else %}
-        <p>No posts available.</p>
-    {% endif %}
-</div>
-<div class="d-flex justify-content-center mt-4">
-    <nav aria-label="Page navigation">
-        <ul class="pagination">
-            {% if query.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ query.previous_page_number }}" tabindex="-1" aria-disabled="false">Previous</a>
-                </li>
-            {% else %}
-                <li class="page-item disabled">
-                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
-                </li>
-            {% endif %}
-
-            {% for page_num in query.paginator.page_range %}
-                {% if query.number == page_num %}
-                    <li class="page-item active" aria-current="page">
-                        <a class="page-link" href="#">{{ page_num }} <span class="sr-only">(current)</span></a>
-                    </li>
+<div class="max-w-3xl mx-auto mt-6">
+    <!-- Profile header -->
+    <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-4">
+            <div class="w-16 h-16 rounded-full bg-gray-300 dark:bg-gray-600"></div>
+            <div>
+                <h2 class="text-2xl font-bold">{{ profile_user.username }}</h2>
+                <div class="flex gap-4 mt-1 text-gray-600 dark:text-gray-400">
+                    <span>{{ allfollower.count }} Followers</span>
+                    <span>{{ allfollowing.count }} Following</span>
+                </div>
+            </div>
+        </div>
+        {% if user.is_authenticated and profile_user != user %}
+            <form action="{% url 'follow' %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="userfollow" value="{{profile_user}}">
+                {% if isfollow %}
+                <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Unfollow</button>
                 {% else %}
-                    <li class="page-item"><a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a></li>
+                <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">Follow</button>
                 {% endif %}
-            {% endfor %}
+            </form>
+        {% endif %}
+    </div>
 
-            {% if query.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ query.next_page_number }}">Next</a>
-                </li>
-            {% else %}
-                <li class="page-item disabled">
-                    <a class="page-link" href="#" aria-disabled="true">Next</a>
-                </li>
-            {% endif %}
-        </ul>
-    </nav>
+    <!-- Posts -->
+    <div class="flex flex-col gap-4">
+        {% for i in query %}
+        <div class="bg-white dark:bg-[#1E293B] p-4 rounded-xl shadow hover:shadow-lg transition">
+            <div class="flex justify-between items-center mb-2">
+                <a href="{% url 'profile' i.creator.id %}" class="font-semibold text-gray-800 dark:text-gray-100">{{ i.creator.username }}</a>
+                <small class="text-gray-500 dark:text-gray-400">{{ i.timestamp }}</small>
+            </div>
+            <p class="text-gray-800 dark:text-gray-200">{{ i.newpost }}</p>
+            <form action="{% url 'like' i.id %}" method="post" class="mt-3">
+                {% csrf_token %}
+                <input type="hidden" name="post_id" value="{{ i.id }}">
+                <button class="like-button text-gray-800 dark:text-gray-200 hover:text-red-500 transition">
+                    ❤️ {{ i.likes }}
+                </button>
+            </form>
+        </div>
+        {% empty %}
+        <p class="text-gray-500 dark:text-gray-400">No posts yet.</p>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination same as index.html -->
+    <div class="mt-6 flex justify-center">
+        <nav>
+            <ul class="flex gap-1">
+                {% if query.has_previous %}
+                <li><a href="?page={{ query.previous_page_number }}" class="px-3 py-1 rounded-md bg-[#0EA5E9] text-white hover:bg-[#0284C7]">Prev</a></li>
+                {% endif %}
+                {% for page_num in query.paginator.page_range %}
+                    {% if query.number == page_num %}
+                    <li><span class="px-3 py-1 rounded-md bg-gray-300 dark:bg-gray-600">{{ page_num }}</span></li>
+                    {% else %}
+                    <li><a href="?page={{ page_num }}" class="px-3 py-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">{{ page_num }}</a></li>
+                    {% endif %}
+                {% endfor %}
+                {% if query.has_next %}
+                <li><a href="?page={{ query.next_page_number }}" class="px-3 py-1 rounded-md bg-[#0EA5E9] text-white hover:bg-[#0284C7]">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
 </div>
-
-
-
-
-
- 
-
-
-
-
-
 
 {% endblock %}

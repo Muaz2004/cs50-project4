@@ -1,14 +1,14 @@
 {% extends "network/layout.html" %}
-
 {% block body %}
-<div id="newpost">
-    {% if request.user == edited.creator %}
-        <form action="{% url 'edit' edited.id %}" method="post" id="editform">
-            {% csrf_token %}
-            <!-- Pre-fill the textarea with the current post content -->
-            <textarea name="content" id="content" placeholder="Edit">{{ edited.newpost }}</textarea>
-            <button class="btn btn-primary" id="button" type="submit">Save Changes</button>
-        </form>
-    {% endif %}
-</div>
+
+{% if request.user == edited.creator %}
+<form action="{% url 'edit' edited.id %}" method="post" class="flex flex-col gap-2 bg-white dark:bg-[#1E293B] p-4 rounded-md shadow-md max-w-2xl mx-auto mt-6">
+    {% csrf_token %}
+    <textarea name="content" placeholder="Edit your post..." class="border rounded-md p-2 w-full dark:bg-[#0F172A] dark:text-gray-100">{{ edited.newpost }}</textarea>
+    <button type="submit" class="bg-[#0EA5E9] text-white px-4 py-2 rounded-md w-32 hover:bg-[#0284C7]">Save Changes</button>
+</form>
+{% else %}
+<p class="text-center text-gray-500 dark:text-gray-400 mt-6">You cannot edit this post.</p>
+{% endif %}
+
 {% endblock %}

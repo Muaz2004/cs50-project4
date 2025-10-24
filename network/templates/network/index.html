@@ -1,79 +1,58 @@
 {% extends "network/layout.html" %}
-
 {% block body %}
 
+<!-- New Post -->
+<div class="mb-6">
+    {% if user.is_authenticated %}
+    <form action="{% url 'newpost' %}" method="post" class="flex flex-col gap-2 bg-white dark:bg-[#1E293B] p-4 rounded-md shadow-md">
+        {% csrf_token %}
+        <textarea name="content" placeholder="What's on your mind?" class="border rounded-md p-2 w-full dark:bg-[#0F172A] dark:text-gray-100"></textarea>
+        <button type="submit" class="bg-[#0EA5E9] text-white px-4 py-2 rounded-md w-32 hover:bg-[#0284C7]">Post</button>
+    </form>
+    {% endif %}
+</div>
 
-    <div id="newpost">
-        <form action="{% url 'newpost' %}" method="post" id="nform">
+<!-- Posts -->
+<div class="flex flex-col gap-4">
+    {% for i in query %}
+    <div class="bg-white dark:bg-[#1E293B] p-4 rounded-md shadow-md">
+        <a href="{% url 'profile' i.creator.id %}" class="font-bold text-[#0EA5E9] hover:underline">{{ i.creator.username }}</a>
+        <p class="mt-1">{{ i.newpost }}</p>
+        <small class="text-gray-500 dark:text-gray-400">{{ i.timestamp }}</small>
+
+        <!-- Like button -->
+        <form action="{% url 'like' i.id %}" method="post" class="mt-2">
             {% csrf_token %}
-           
-            <textarea name="content" id="content" placeholder="newpost"></textarea>
-            <button  class="btn btn-primary" id="button" type="submit">Post</button>
+            <input type="hidden" name="post_id" value="{{ i.id }}">
+            <button class="like-button px-3 py-1 rounded-md hover:bg-[#0284C7] bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+                ❤️ {{ i.likes }}
+            </button>
         </form>
     </div>
-    
+    {% empty %}
+    <p class="text-center text-gray-500 dark:text-gray-400">No posts yet.</p>
+    {% endfor %}
+</div>
 
-    <div id="allpost">
-        <h1>Posts</h1>
-        {% for i in query %}
-          <ul class="list-group">
-            <li class="list-group-item">
-              <a href="{% url 'profile' i.creator.id %}"><strong>{{i.creator.username}}</strong> </a>  <br> 
-              <a href="{% url 'edit' i.id %}">Edit </a><br>
-               <span>{{i.newpost}}</span> <br>
-               <small>{{i.timestamp}}</small> <br> 
-
-               <form action="{% url 'like' i.id %}" method="post" id="likeform">
-                {% csrf_token %}
-                <input type="hidden" name="post_id" value="{{ i.id }}">
-                <button class="btn btn-light like-button" type="submit">
-
-                    ❤️ {{ i.likes }}
-                </button>
-                
-                
-              </form>
-              
-            </li>
-          </ul>
-        {% endfor %}
-    </div>
-    
-    <div class="d-flex justify-content-center mt-4">
-        <nav aria-label="Page navigation">
-            <ul class="pagination">
-                {% if query.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ query.previous_page_number }}" tabindex="-1" aria-disabled="false">Previous</a>
-                    </li>
+<!-- Pagination -->
+<div class="mt-6 flex justify-center">
+    <nav>
+        <ul class="flex gap-1">
+            {% if query.has_previous %}
+            <li><a href="?page={{ query.previous_page_number }}" class="px-3 py-1 rounded-md bg-[#0EA5E9] text-white hover:bg-[#0284C7]">Prev</a></li>
+            {% endif %}
+            {% for page_num in query.paginator.page_range %}
+                {% if query.number == page_num %}
+                <li><span class="px-3 py-1 rounded-md bg-gray-300 dark:bg-gray-600">{{ page_num }}</span></li>
                 {% else %}
-                    <li class="page-item disabled">
-                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
-                    </li>
+                <li><a href="?page={{ page_num }}" class="px-3 py-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">{{ page_num }}</a></li>
                 {% endif %}
-    
-                {% for page_num in query.paginator.page_range %}
-                    {% if query.number == page_num %}
-                        <li class="page-item active" aria-current="page">
-                            <a class="page-link" href="#">{{ page_num }} <span class="sr-only">(current)</span></a>
-                        </li>
-                    {% else %}
-                        <li class="page-item"><a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a></li>
-                    {% endif %}
-                {% endfor %}
-    
-                {% if query.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ query.next_page_number }}">Next</a>
-                    </li>
-                {% else %}
-                    <li class="page-item disabled">
-                        <a class="page-link" href="#" aria-disabled="true">Next</a>
-                    </li>
-                {% endif %}
-            </ul>
-        </nav>
-    </div>
-    
-  
+            {% endfor %}
+            {% if query.has_next %}
+            <li><a href="?page={{ query.next_page_number }}" class="px-3 py-1 rounded-md bg-[#0EA5E9] text-white hover:bg-[#0284C7]">Next</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+
 {% endblock %}

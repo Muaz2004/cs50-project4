@@ -1,50 +1,141 @@
 {% load static %}
-
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <title>{% block title %}Social Network{% endblock %}</title>
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-        <link href="{% static 'network/styles.css' %}" rel="stylesheet">
-    </head>
-    <body>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Social Network{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
 
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand" href="#">Network</a>
-          
-            <div>
-              <ul class="navbar-nav mr-auto">
-                {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'profile' user.id %}"><strong>{{ user.username }}</strong></a>
-                    </li>
-                {% endif %}
-                <li class="nav-item">
-                  <a class="nav-link" href="{% url 'index' %}">All Posts</a>
-                </li>
-                {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'following' %}">Following</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
-                    </li>
-                {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login' %}">Log In</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'register' %}">Register</a>
-                    </li>
-                {% endif %}
-              </ul>
-            </div>
-          </nav>
-        
-        <div class="body">
-            <script src="{% static 'network/script.js' %}"></script>
-            {% block body %}
-            {% endblock %}
-        </div>
-    </body>
+  <body
+    class="bg-[#E0F2FE] dark:bg-[#0F172A] min-h-screen flex flex-col text-gray-900 dark:text-gray-100 transition-colors duration-300"
+  >
+    <!-- Navbar -->
+    <nav
+      class="bg-white/70 dark:bg-[#1E293B] backdrop-blur-md shadow-md sticky top-0 z-50"
+    >
+      <div
+        class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center"
+      >
+        <a href="{% url 'index' %}" class="text-2xl font-bold text-[#0EA5E9]"
+          >Network</a
+        >
+        <button
+          class="md:hidden text-[#0EA5E9] focus:outline-none"
+          onclick="document.getElementById('mobile-menu').classList.toggle('hidden')"
+        >
+          ☰
+        </button>
+        <ul class="hidden md:flex gap-6 items-center font-medium">
+          {% if user.is_authenticated %}
+          <li>
+            <a href="{% url 'profile' user.id %}" class="hover:text-[#0EA5E9]"
+              >{{ user.username }}</a
+            >
+          </li>
+          {% endif %}
+          <li><a href="{% url 'index' %}" class="hover:text-[#0EA5E9]">All</a></li>
+          {% if user.is_authenticated %}
+          <li>
+            <a href="{% url 'following' %}" class="hover:text-[#0EA5E9]"
+              >Following</a
+            >
+          </li>
+          <li>
+            <a href="{% url 'logout' %}" class="hover:text-[#0EA5E9]">Logout</a>
+          </li>
+          {% else %}
+          <li>
+            <a href="{% url 'login' %}" class="hover:text-[#0EA5E9]">Login</a>
+          </li>
+          <li>
+            <a href="{% url 'register' %}" class="hover:text-[#0EA5E9]"
+              >Register</a
+            >
+          </li>
+          {% endif %}
+          <!-- Clean Sun/Moon Dark Mode Toggle -->
+          <li>
+            <button
+              id="dark-toggle"
+              class="text-xl focus:outline-none"
+              aria-label="Toggle Dark Mode"
+            >🌙</button>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Mobile Menu -->
+      <div id="mobile-menu" class="hidden md:hidden px-6 pb-3">
+        <ul class="flex flex-col gap-2 text-center">
+          {% if user.is_authenticated %}
+          <li>
+            <a href="{% url 'profile' user.id %}" class="block py-2">Profile</a>
+          </li>
+          {% endif %}
+          <li><a href="{% url 'index' %}" class="block py-2">All</a></li>
+          {% if user.is_authenticated %}
+          <li><a href="{% url 'following' %}" class="block py-2">Following</a></li>
+          <li><a href="{% url 'logout' %}" class="block py-2">Logout</a></li>
+          {% else %}
+          <li><a href="{% url 'login' %}" class="block py-2">Login</a></li>
+          <li><a href="{% url 'register' %}" class="block py-2">Register</a></li>
+          {% endif %}
+          <li class="mt-2">
+            <button
+              id="dark-toggle-mobile"
+              class="text-2xl focus:outline-none"
+              aria-label="Toggle Dark Mode"
+            >🌙</button>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Body -->
+    <main class="flex-1 max-w-3xl mx-auto w-full p-4">
+      {% block body %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer
+      class="text-center text-sm text-gray-500 py-4 border-t dark:border-gray-700"
+    >
+      © {{ now.year }} Social Network — Built by Muaz 🌊
+    </footer>
+
+    <script>
+      // Dark Mode Logic with Sun/Moon Toggle
+      const html = document.documentElement;
+      const toggleDesktop = document.getElementById("dark-toggle");
+      const toggleMobile = document.getElementById("dark-toggle-mobile");
+
+      // Initialize based on localStorage or system preference
+      if (
+        localStorage.theme === "dark" ||
+        (!("theme" in localStorage) &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches)
+      ) {
+        html.classList.add("dark");
+        toggleDesktop.textContent = "☀️";
+        if (toggleMobile) toggleMobile.textContent = "☀️";
+      } else {
+        html.classList.remove("dark");
+        toggleDesktop.textContent = "🌙";
+        if (toggleMobile) toggleMobile.textContent = "🌙";
+      }
+
+      function toggleDarkMode() {
+        html.classList.toggle("dark");
+        const isDark = html.classList.contains("dark");
+        toggleDesktop.textContent = isDark ? "☀️" : "🌙";
+        if (toggleMobile) toggleMobile.textContent = isDark ? "☀️" : "🌙";
+        localStorage.theme = isDark ? "dark" : "light";
+      }
+
+      toggleDesktop.addEventListener("click", toggleDarkMode);
+      if (toggleMobile) toggleMobile.addEventListener("click", toggleDarkMode);
+    </script>
+  </body>
 </html>
