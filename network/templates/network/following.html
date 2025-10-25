@@ -2,71 +2,100 @@
 
 {% block body %}
 
+<div class="max-w-3xl mx-auto mt-6">
 
-    
-
-    <div id="allpost">
-        <h1>Posts by Your Following</h1>
-        {% for i in query %}
-          <ul class="list-group">
-            <li class="list-group-item">
-              <a href="{% url 'profile' i.creator.id %}"><strong>{{i.creator.username}}</strong> </a>  <br> 
-               <span>{{i.newpost}}</span> <br>
-               <small>{{i.timestamp}}</small> <br> 
-
-               <form action="{% url 'like' i.id %}" method="post" id="likeform">
-                {% csrf_token %}
-                <input type="hidden" name="post_id" value="{{ i.id }}">
-                <button class="btn btn-light like-button" type="submit">
-
-                    ❤️ {{ i.likes }}
-                </button>
-                
-                
-              </form>
-              
-            </li>
-          </ul>
-        {% endfor %}
+    <!-- Plain Text Header -->
+    <div class="mb-6 text-center">
+        <h1 class="text-3xl font-bold mb-2">Welcome to Your Feed</h1>
+        <p class="text-gray-600 dark:text-gray-400 text-lg">See the latest posts from users you follow and engage with them! ❤️</p>
     </div>
-    
-  </div>
 
-  <div class="d-flex justify-content-center mt-4">
-    <nav aria-label="Page navigation">
-        <ul class="pagination">
-            {% if query.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ query.previous_page_number }}" tabindex="-1" aria-disabled="false">Previous</a>
-                </li>
-            {% else %}
-                <li class="page-item disabled">
-                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
-                </li>
-            {% endif %}
+    {% if query %}
+        <div class="flex flex-col gap-4">
+            {% for i in query %}
+            <div class="bg-white dark:bg-[#1E293B] p-4 rounded-xl shadow hover:shadow-lg transition">
+                <div class="flex justify-between items-center mb-2">
+                    <a href="{% url 'profile' i.creator.id %}" class="font-semibold text-gray-800 dark:text-gray-100">{{ i.creator.username }}</a>
+                    <small class="text-gray-500 dark:text-gray-400">{{ i.timestamp }}</small>
+                </div>
+                <p class="text-gray-800 dark:text-gray-200">{{ i.newpost }}</p>
 
-            {% for page_num in query.paginator.page_range %}
-                {% if query.number == page_num %}
-                    <li class="page-item active" aria-current="page">
-                        <a class="page-link" href="#">{{ page_num }} <span class="sr-only">(current)</span></a>
-                    </li>
-                {% else %}
-                    <li class="page-item"><a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a></li>
-                {% endif %}
+                <!-- Like button -->
+                <div class="mt-3 flex items-center gap-2">
+                    <button
+                        class="like-button text-2xl focus:outline-none transition-colors duration-200"
+                        data-post-id="{{ i.id }}"
+                        {% if user in i.liked_by.all %}
+                            style="color:red;"
+                        {% else %}
+                            style="color:white;"
+                        {% endif %}
+                    >
+                        {% if user in i.liked_by.all %}
+                            ❤️
+                        {% else %}
+                            🤍
+                        {% endif %}
+                    </button>
+                    <span class="text-gray-600 dark:text-gray-400" id="likes-count-{{ i.id }}">{{ i.likes }}</span>
+                </div>
+            </div>
             {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-center text-gray-600 dark:text-gray-400 mt-6 text-lg">
+            Your feed is currently empty. Start following users to see their posts here!
+        </p>
+    {% endif %}
 
-            {% if query.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ query.next_page_number }}">Next</a>
-                </li>
-            {% else %}
-                <li class="page-item disabled">
-                    <a class="page-link" href="#" aria-disabled="true">Next</a>
-                </li>
-            {% endif %}
-        </ul>
-    </nav>
+    <!-- Pagination -->
+    <div class="mt-6 flex justify-center">
+        <nav>
+            <ul class="flex gap-1">
+                {% if query.has_previous %}
+                <li><a href="?page={{ query.previous_page_number }}" class="px-3 py-1 rounded-md bg-[#0EA5E9] text-white hover:bg-[#0284C7]">Prev</a></li>
+                {% endif %}
+                {% for page_num in query.paginator.page_range %}
+                    {% if query.number == page_num %}
+                    <li><span class="px-3 py-1 rounded-md bg-gray-300 dark:bg-gray-600">{{ page_num }}</span></li>
+                    {% else %}
+                    <li><a href="?page={{ page_num }}" class="px-3 py-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">{{ page_num }}</a></li>
+                    {% endif %}
+                {% endfor %}
+                {% if query.has_next %}
+                <li><a href="?page={{ query.next_page_number }}" class="px-3 py-1 rounded-md bg-[#0EA5E9] text-white hover:bg-[#0284C7]">Next</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
 </div>
 
+<!-- Like Button Script -->
+<script>
+document.querySelectorAll('.like-button').forEach(button => {
+    button.addEventListener('click', async () => {
+        const postId = button.dataset.postId;
+
+        const response = await fetch(`/like/${postId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+        });
+        const data = await response.json();
+
+        if (data.liked) {
+            button.textContent = '❤️';
+            button.style.color = 'red';
+        } else {
+            button.textContent = '🤍';
+            button.style.color = 'white';
+        }
+
+        document.getElementById(`likes-count-${postId}`).textContent = data.likes;
+    });
+});
+</script>
 
 {% endblock %}

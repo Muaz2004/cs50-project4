@@ -31,18 +31,13 @@
           ☰
         </button>
         <ul class="hidden md:flex gap-6 items-center font-medium">
+          <li><a href="{% url 'index' %}" class="hover:text-[#0EA5E9]">All Posts</a></li>
           {% if user.is_authenticated %}
-          <li>
-            <a href="{% url 'profile' user.id %}" class="hover:text-[#0EA5E9]">{{ user.username }}</a>
-          </li>
-          {% endif %}
-          <li><a href="{% url 'index' %}" class="hover:text-[#0EA5E9]">All</a></li>
-          {% if user.is_authenticated %}
-          <li><a href="{% url 'following' %}" class="hover:text-[#0EA5E9]">Following</a></li>
-          <li><a href="{% url 'logout' %}" class="hover:text-[#0EA5E9]">Logout</a></li>
+            <li><a href="{% url 'following' %}" class="hover:text-[#0EA5E9]">Following</a></li>
+            <li><a href="{% url 'logout' %}" class="hover:text-[#0EA5E9]">Logout</a></li>
           {% else %}
-          <li><a href="{% url 'login' %}" class="hover:text-[#0EA5E9]">Login</a></li>
-          <li><a href="{% url 'register' %}" class="hover:text-[#0EA5E9]">Register</a></li>
+            <li><a href="{% url 'login' %}" class="hover:text-[#0EA5E9]">Login</a></li>
+            <li><a href="{% url 'register' %}" class="hover:text-[#0EA5E9]">Register</a></li>
           {% endif %}
           <!-- Dark Mode Toggle -->
           <li>
@@ -52,22 +47,26 @@
               aria-label="Toggle Dark Mode"
             >🌙</button>
           </li>
+          {% if user.is_authenticated %}
+          <!-- Moved username to the right side for a cleaner look -->
+          <li class="ml-4 text-gray-700 dark:text-gray-200 font-semibold">
+            <a href="{% url 'profile' user.id %}">{{ user.username }}</a>
+          </li>
+          {% endif %}
         </ul>
       </div>
 
       <!-- Mobile Menu -->
       <div id="mobile-menu" class="hidden md:hidden px-6 pb-3">
         <ul class="flex flex-col gap-2 text-center">
+          <li><a href="{% url 'index' %}" class="block py-2">All Posts</a></li>
           {% if user.is_authenticated %}
-          <li><a href="{% url 'profile' user.id %}" class="block py-2">Profile</a></li>
-          {% endif %}
-          <li><a href="{% url 'index' %}" class="block py-2">All</a></li>
-          {% if user.is_authenticated %}
-          <li><a href="{% url 'following' %}" class="block py-2">Following</a></li>
-          <li><a href="{% url 'logout' %}" class="block py-2">Logout</a></li>
+            <li><a href="{% url 'following' %}" class="block py-2">Following</a></li>
+            <li><a href="{% url 'logout' %}" class="block py-2">Logout</a></li>
+            <li class="block py-2 font-semibold"><a href="{% url 'profile' user.id %}">{{ user.username }}</a></li>
           {% else %}
-          <li><a href="{% url 'login' %}" class="block py-2">Login</a></li>
-          <li><a href="{% url 'register' %}" class="block py-2">Register</a></li>
+            <li><a href="{% url 'login' %}" class="block py-2">Login</a></li>
+            <li><a href="{% url 'register' %}" class="block py-2">Register</a></li>
           {% endif %}
           <li class="mt-2">
             <button

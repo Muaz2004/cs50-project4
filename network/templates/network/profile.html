@@ -1,74 +1,126 @@
 {% extends "network/layout.html" %}
+
 {% block body %}
 
-<div class="max-w-3xl mx-auto mt-6">
-    <!-- Profile header -->
-    <div class="flex items-center justify-between mb-6">
-        <div class="flex items-center gap-4">
-            <div class="w-16 h-16 rounded-full bg-gray-300 dark:bg-gray-600"></div>
-            <div>
-                <h2 class="text-2xl font-bold">{{ profile_user.username }}</h2>
-                <div class="flex gap-4 mt-1 text-gray-600 dark:text-gray-400">
-                    <span>{{ allfollower.count }} Followers</span>
-                    <span>{{ allfollowing.count }} Following</span>
+<!-- Profile Header -->
+<div class="max-w-3xl mx-auto mb-8 p-8 rounded-3xl bg-white dark:bg-[#111827] shadow-xl border border-gray-100 dark:border-gray-800 transition-shadow duration-500">
+    <div class="flex flex-col md:flex-row items-center gap-8">
+        <!-- Avatar -->
+        <div class="relative w-32 h-32 flex-shrink-0">
+            <div class="w-full h-full rounded-full flex items-center justify-center text-5xl font-extrabold text-[#0EA5E9] border-4 border-white dark:border-[#111827] ring-4 ring-[#0EA5E9]/50 dark:ring-[#0EA5E9]/70 bg-gradient-to-br from-gray-50 to-gray-200 dark:from-[#1F2937] dark:to-[#374151] shadow-inner transition-all duration-300">
+                {{ profile_user.username|first|upper }}
+            </div>
+        </div>
+
+        <!-- Profile Info -->
+        <div class="flex-1 flex flex-col justify-center items-center md:items-start text-center md:text-left">
+            <h1 class="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-2">{{ profile_user.username }}</h1>
+            <div class="flex gap-8 text-gray-600 dark:text-gray-400 text-base font-semibold mt-1">
+                <div class="flex flex-col items-center md:items-start">
+                    <strong class="text-xl text-gray-900 dark:text-white">{{ allfollower.count }}</strong>
+                    <span class="text-sm uppercase tracking-wider">Followers</span>
+                </div>
+                <div class="flex flex-col items-center md:items-start">
+                    <strong class="text-xl text-gray-900 dark:text-white">{{ allfollowing.count }}</strong>
+                    <span class="text-sm uppercase tracking-wider">Following</span>
                 </div>
             </div>
-        </div>
-        {% if user.is_authenticated and profile_user != user %}
-            <form action="{% url 'follow' %}" method="post">
-                {% csrf_token %}
-                <input type="hidden" name="userfollow" value="{{profile_user}}">
-                {% if isfollow %}
-                <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Unfollow</button>
-                {% else %}
-                <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">Follow</button>
-                {% endif %}
-            </form>
-        {% endif %}
-    </div>
 
-    <!-- Posts -->
-    <div class="flex flex-col gap-4">
-        {% for i in query %}
-        <div class="bg-white dark:bg-[#1E293B] p-4 rounded-xl shadow hover:shadow-lg transition">
-            <div class="flex justify-between items-center mb-2">
-                <a href="{% url 'profile' i.creator.id %}" class="font-semibold text-gray-800 dark:text-gray-100">{{ i.creator.username }}</a>
-                <small class="text-gray-500 dark:text-gray-400">{{ i.timestamp }}</small>
-            </div>
-            <p class="text-gray-800 dark:text-gray-200">{{ i.newpost }}</p>
-            <form action="{% url 'like' i.id %}" method="post" class="mt-3">
-                {% csrf_token %}
-                <input type="hidden" name="post_id" value="{{ i.id }}">
-                <button class="like-button text-gray-800 dark:text-gray-200 hover:text-red-500 transition">
-                    ❤️ {{ i.likes }}
-                </button>
-            </form>
-        </div>
-        {% empty %}
-        <p class="text-gray-500 dark:text-gray-400">No posts yet.</p>
-        {% endfor %}
-    </div>
-
-    <!-- Pagination same as index.html -->
-    <div class="mt-6 flex justify-center">
-        <nav>
-            <ul class="flex gap-1">
-                {% if query.has_previous %}
-                <li><a href="?page={{ query.previous_page_number }}" class="px-3 py-1 rounded-md bg-[#0EA5E9] text-white hover:bg-[#0284C7]">Prev</a></li>
-                {% endif %}
-                {% for page_num in query.paginator.page_range %}
-                    {% if query.number == page_num %}
-                    <li><span class="px-3 py-1 rounded-md bg-gray-300 dark:bg-gray-600">{{ page_num }}</span></li>
+            <!-- Follow/Unfollow Button -->
+            {% if user.is_authenticated and profile_user != user %}
+                <form action="{% if isfollow %}{% url 'unfollow' %}{% else %}{% url 'follow' %}{% endif %}" method="post" class="mt-5">
+                    {% csrf_token %}
+                    <input type="hidden" name="userfollow" value="{{ profile_user }}">
+                    {% if isfollow %}
+                        <button type="submit" class="px-7 py-3 bg-red-600 text-white rounded-xl shadow-lg shadow-red-500/30 hover:bg-red-700 font-bold transition-all duration-300 transform hover:scale-105">
+                            Unfollow
+                        </button>
                     {% else %}
-                    <li><a href="?page={{ page_num }}" class="px-3 py-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">{{ page_num }}</a></li>
+                        <button type="submit" class="px-7 py-3 bg-[#0EA5E9] text-white rounded-xl shadow-lg shadow-[#0EA5E9]/30 hover:bg-[#0284C7] font-bold transition-all duration-300 transform hover:scale-105">
+                            Follow
+                        </button>
                     {% endif %}
-                {% endfor %}
-                {% if query.has_next %}
-                <li><a href="?page={{ query.next_page_number }}" class="px-3 py-1 rounded-md bg-[#0EA5E9] text-white hover:bg-[#0284C7]">Next</a></li>
-                {% endif %}
-            </ul>
-        </nav>
+                </form>
+            {% endif %}
+        </div>
     </div>
 </div>
+
+<!-- Welcome Message -->
+<div class="max-w-3xl mx-auto mb-6 text-center text-gray-700 dark:text-gray-300 text-lg">
+    Welcome to <strong>{{ profile_user.username }}'s profile</strong>! Explore their posts and show some ❤️.
+</div>
+
+<!-- Posts -->
+<div class="flex flex-col gap-4 max-w-3xl mx-auto">
+    {% if query %}
+        {% for i in query %}
+        <div class="bg-white dark:bg-[#1E293B] p-4 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 transition-colors duration-300">
+            <div class="flex justify-between items-start mb-2">
+                <a href="{% url 'profile' i.creator.id %}" class="font-semibold text-[#0EA5E9] hover:underline">{{ i.creator.username }}</a>
+                <small class="text-gray-500 dark:text-gray-400">{{ i.timestamp }}</small>
+            </div>
+            <p class="text-gray-800 dark:text-gray-200 mt-1">{{ i.newpost }}</p>
+
+            <!-- Like Button -->
+            <div class="mt-3 flex items-center gap-2">
+                <button class="like-button text-2xl focus:outline-none transition-colors duration-200" data-post-id="{{ i.id }}"
+                    {% if user in i.liked_by.all %} style="color:red;" {% else %} style="color:white;" {% endif %}>
+                    {% if user in i.liked_by.all %} ❤️ {% else %} 🤍 {% endif %}
+                </button>
+                <span class="text-gray-600 dark:text-gray-400" id="likes-count-{{ i.id }}">{{ i.likes }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-center text-gray-500 dark:text-gray-400">No posts yet. Be the first to share something!</p>
+    {% endif %}
+</div>
+
+<!-- Pagination -->
+<div class="mt-6 flex justify-center max-w-3xl mx-auto">
+    <nav>
+        <ul class="flex gap-1">
+            {% if query.has_previous %}
+                <li><a href="?page={{ query.previous_page_number }}" class="px-3 py-1 rounded-md bg-[#0EA5E9] text-white hover:bg-[#0284C7]">Prev</a></li>
+            {% endif %}
+            {% for page_num in query.paginator.page_range %}
+                {% if query.number == page_num %}
+                    <li><span class="px-3 py-1 rounded-md bg-gray-300 dark:bg-gray-600">{{ page_num }}</span></li>
+                {% else %}
+                    <li><a href="?page={{ page_num }}" class="px-3 py-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">{{ page_num }}</a></li>
+                {% endif %}
+            {% endfor %}
+            {% if query.has_next %}
+                <li><a href="?page={{ query.next_page_number }}" class="px-3 py-1 rounded-md bg-[#0EA5E9] text-white hover:bg-[#0284C7]">Next</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+
+<!-- Like Button Script -->
+<script>
+document.querySelectorAll('.like-button').forEach(button => {
+    button.addEventListener('click', async () => {
+        const postId = button.dataset.postId;
+        const response = await fetch(`/like/${postId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+        });
+        const data = await response.json();
+        if (data.liked) {
+            button.textContent = '❤️';
+            button.style.color = 'red';
+        } else {
+            button.textContent = '🤍';
+            button.style.color = 'white';
+        }
+        document.getElementById(`likes-count-${postId}`).textContent = data.likes;
+    });
+});
+</script>
 
 {% endblock %}
