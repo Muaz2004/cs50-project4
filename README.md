@@ -1,6 +1,6 @@
 # CS50 Network Project 🌐
 
-A Django-based social network inspired by **CS50’s Network assignment**. Users can create accounts, post content, follow others, and interact with posts in a dynamic feed.
+A Django-based social network inspired by **CS50’s Network project**. Users can create accounts, post content, follow others, and interact with posts in a dynamic feed.
 
 ---
 
